@@ -5,6 +5,7 @@ import com.SecuCom.SecuCom.model.Utilisateurs;
 import com.SecuCom.SecuCom.repository.RoleRepository;
 import com.SecuCom.SecuCom.repository.UtilisateursRepository;
 import com.SecuCom.SecuCom.service.UtilisateurService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -15,14 +16,18 @@ import java.util.List;
 public class UtilisateurServiceImpl implements UtilisateurService {
     private UtilisateursRepository utilisateursRepository;
     private RoleRepository roleRepository;
+    private PasswordEncoder passwordEncoder;
 
-    public UtilisateurServiceImpl(UtilisateursRepository utilisateursRepository, RoleRepository roleRepository) {
+    public UtilisateurServiceImpl(UtilisateursRepository utilisateursRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.utilisateursRepository = utilisateursRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Utilisateurs AjouterUtilisateurs(Utilisateurs utilisateurs) {
+        String pw= utilisateurs.getMotDePasse();
+        utilisateurs.setMotDePasse(passwordEncoder.encode(pw));
         return utilisateursRepository.save(utilisateurs);
     }
 
