@@ -2,6 +2,7 @@ package com.SecuCom.SecuCom.model;
 
 import com.SecuCom.SecuCom.filters.JwtAuthentificationFilter;
 import com.SecuCom.SecuCom.service.UtilisateurService;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,14 +23,12 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserGran
 
 import java.util.ArrayList;
 import java.util.Collection;
-
+@Data
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private UtilisateurService utilisateurService;
-    //@Autowired
-    //private UtilisateurService utilisateurService;
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(new UserDetailsService() {
