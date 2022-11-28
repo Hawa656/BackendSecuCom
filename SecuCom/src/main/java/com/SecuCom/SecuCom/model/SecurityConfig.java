@@ -1,6 +1,7 @@
 package com.SecuCom.SecuCom.model;
 
 import com.SecuCom.SecuCom.filters.JwtAuthentificationFilter;
+import com.SecuCom.SecuCom.filters.JwtAuthorizationFilter;
 import com.SecuCom.SecuCom.service.UtilisateurService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,14 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static org.springframework.http.HttpMethod.GET;
+
 @Data
 @Configuration
 @EnableWebSecurity
@@ -48,12 +53,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        //http.headers().frameOptions().disable();
-        //permet d'afficher le formulaire quand on veut accéder alors qu'on a pas le droit
+        http.authorizeRequests().antMatchers("/API/login").permitAll();
+        http.authorizeRequests().antMatchers(GET,"/API/utilisateurs/**").hasAnyAuthority("user");
         http.formLogin();
-        //autoriser l'accès à toute les fonctionnalités
         http.authorizeRequests().anyRequest().authenticated();
+
         http.addFilter(new JwtAuthentificationFilter(authenticationManagerBean()));
+        http.addFilterBefore(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
