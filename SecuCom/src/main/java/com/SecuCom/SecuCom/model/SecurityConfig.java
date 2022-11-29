@@ -1,6 +1,7 @@
 package com.SecuCom.SecuCom.model;
 
 import com.SecuCom.SecuCom.filters.JwtAuthentificationFilter;
+import com.SecuCom.SecuCom.filters.JwtAuthorizationFilter;
 import com.SecuCom.SecuCom.service.UtilisateurService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +20,31 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static org.springframework.http.HttpMethod.GET;
+//Pour configurer
+
 @Data
-        //montre qu'il s'agit d'une classe de configuration
+//Indique qu'il s'agit d'une classe de configuration
 @Configuration
-//permet à spring de savoir ou se trouve les pages de configurations
+//Permet à spring boot de savoir où se trouve les configurations
 @EnableWebSecurity
+//Notre class de configuration va heritée de WebSecurityConfigurerAdapter pour nous permettre de gerer notre chaine de filtres
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    //Nous avons deux methodes
     @Autowired
     private UtilisateurService utilisateurService;
-    //établir un mécanisme d'authentification en permettant aux AuthenticationProviders d'être ajoutés facilement
+    //Pour gerer nos filtres nous avons besoins de la methode configure qui prendra en entré nos requettes http
+    //    @Override permet de redefinir une methode
+
     @Override
+    // $$$$$$$AuthenticationManagerBuilder qui permet de specifier les uers qui sont autorisés;
+    // Elle nous permet d'utiliser les identifiants venat de la base de donnée(elle permet de gérer l'authentification)
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(new UserDetailsService() {
             @Override
@@ -46,20 +58,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             }
         });
     }
-
     @Override
+    //$$$$$$$$Ainsi que la methode qui prend en paramettre HttpSecurity il permet de specifier les droits d'accès;
+    // il permet de (HttpSecurity) de faire passer toute les requettes à travers la chaine de filtre de sécurité
+    // et configurer le formulaire de connexion par defaut avec la methode form login()
     protected void configure(HttpSecurity http) throws Exception {
-        //ce n'est pas la peine de generer le csrf  et de le placer dans la  session car je ne vais pas l'utiliser
-        //permet de desactiver le csrf
+        //CSRF (Cross-Site Request Forgery)
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         //http.headers().frameOptions().disable();
         //permet d'afficher le formulaire quand on veut accéder alors qu'on a pas le droit
+        http.authorizeRequests().antMatchers("/API/login").permitAll();
+        http.authorizeRequests().antMatchers(GET,"/API/utilisateurs/**").hasAnyAuthority("user");
         http.formLogin();
-        //autoriser l'accès à toute les fonctionnalités
-        //toute les requettes neccesiite yune authentifications authenticated
+        //autoriser l'accès à toute les fonctionnalités permitall()
         http.authorizeRequests().anyRequest().authenticated();
+
         http.addFilter(new JwtAuthentificationFilter(authenticationManagerBean()));
+        http.addFilterBefore(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean

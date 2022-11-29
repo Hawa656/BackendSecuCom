@@ -1,20 +1,17 @@
 package com.SecuCom.SecuCom.controller;
 
 import com.SecuCom.SecuCom.model.Role;
-import com.SecuCom.SecuCom.model.RoleUtilisateurForm;
 import com.SecuCom.SecuCom.model.Utilisateurs;
 import com.SecuCom.SecuCom.service.UtilisateurService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.bind.annotation.*;
 
 
-
-import java.nio.file.Path;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class UtilisateurController {
     private UtilisateurService utilisateurService;
 
@@ -22,7 +19,7 @@ public class UtilisateurController {
         this.utilisateurService = utilisateurService;
     }
     //afficher la liste des utilisateurs
-    @GetMapping(path = "/utilisateurs")
+    @GetMapping("/utilisateurs")
     public List<Utilisateurs> utilisateurs(){
         return utilisateurService.listUtilisateurs();
 
@@ -31,8 +28,8 @@ public class UtilisateurController {
     @PostMapping(path = "/Utilisateur")
     public Utilisateurs saveUtilisateurs(@RequestBody Utilisateurs utilisateurs){
         return utilisateurService.AjouterUtilisateurs(utilisateurs);
-
     }
+
     //Ajouter un role
     @PostMapping(path = "/role")
     public Role ajouterRole(@RequestBody Role role){
@@ -43,5 +40,12 @@ public class UtilisateurController {
     public void AjouterUnRoleAunUtilisateur(@RequestBody RoleUtilisateurForm roleUtilisateurForm){
          utilisateurService.AjouterUnRoleAunUtilisateur(roleUtilisateurForm.getNomUtilisateur(),roleUtilisateurForm.getNomRole());
     }
+}
+@Getter
+@Setter
+class RoleUtilisateurForm {
+    private String nomUtilisateur;
+    private String nomRole;
+
 }
 
